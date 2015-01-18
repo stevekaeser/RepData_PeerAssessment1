@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -11,7 +6,8 @@ output:
 1. Load the data (i.e. read.csv()).
 2. Process/transform the data (if necessary) into a format suitable for your analysis.
 
-```{r}
+
+```r
 #download the remote file
 remoteFile <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 tempDir <- tempdir()
@@ -31,31 +27,36 @@ activity <- read.csv(extractedFile,as.is=TRUE)
 
 1. Make a histogram of the total number of steps taken each day.
 
-```{r}
+
+```r
 #aggregate the number of steps by date
 activityByDate <- aggregate(steps ~ date,activity,sum)
 
 #output the histogram of the number of steps
 hist(activityByDate$steps,col=3,main="Histogram of Number of Steps Per Day",
      xlab="Total Number of Steps In A Day")
-```  
+```
+
+![](./PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 2. Calculate and report the mean and median total number of steps taken per day.
 
-```{r}
+
+```r
 #calculate the mean and median number of steps
 averageNumSteps <- mean(activityByDate$steps)
 medianNumSteps <- median(activityByDate$steps)
 ```
 
-The mean number of steps is `r format(averageNumSteps,digits=7)`.  
-The median number of steps is `r format(medianNumSteps,digits=7)`.
+The mean number of steps is 10766.19.  
+The median number of steps is 10765.
 
 ## What is the average daily activity pattern?
 
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).
 
-```{r}
+
+```r
 #aggregate the mean number of steps by interval
 meanByInterval <- aggregate(steps ~ interval,activity,mean)
 
@@ -63,10 +64,12 @@ meanByInterval <- aggregate(steps ~ interval,activity,mean)
 plot(meanByInterval$steps,type="l",col=4,main="Average Steps By Interval",ylab="Average Number of Steps",xlab="Interval")
 ```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
 
+```r
 #determine which row has most steps
 maxStepsRow <- which.max(meanByInterval$steps)
 
@@ -75,7 +78,7 @@ maxInterval <- meanByInterval[maxStepsRow,]$interval
 maxSteps <- meanByInterval[maxStepsRow,]$steps
 ```
 
-The interval with the average maximum number of steps is `r maxInterval`, representing `r maxSteps` steps.  
+The interval with the average maximum number of steps is 835, representing 206.1698113 steps.  
 
 ## Imputing missing values
 
@@ -83,10 +86,15 @@ Note that there are a number of days/intervals where there are missing values (c
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs).
 
-```{r}
+
+```r
 #determine how many rows are missing data
 missingValues <- activity[!complete.cases(activity),]
 nrow(missingValues)
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -95,8 +103,8 @@ The strategy chosen for this analysis is to use the interval mean to replace the
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
 
+```r
 #create an imputed data frame, using the interval mean to replace
 #missing values
 imputedData <- activity
@@ -112,21 +120,26 @@ for (i in 1:nrow(imputedData)){
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
+
+```r
 #using the new data frame, aggregate the number of steps by date
 imputedStepsByDate <- aggregate(steps ~ date,imputedData,sum)
 
 #output a histogram of the imputed data
 hist(imputedStepsByDate$steps,col=3,main="Histogram of Number of Steps Per Day",
      xlab="Total Number of Steps In A Day")
+```
 
+![](./PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+
+```r
 #calculate the mean and median of the number of steps in the imputed data frame
 imputedAverageNumSteps <- mean(imputedStepsByDate$steps)
 imputedMedianNumSteps <- median(imputedStepsByDate$steps)
 ```
 
-The mean number of steps is `r format(imputedAverageNumSteps,digits=7)`.  
-The median number of steps is `r format(imputedMedianNumSteps,digits=7)`.  
+The mean number of steps is 10766.19.  
+The median number of steps is 10766.19.  
 
 In comparison with the mean and median of the original data set, the mean remained the same, while the median value got higher.
 
@@ -134,7 +147,8 @@ In comparison with the mean and median of the original data set, the mean remain
 
 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 #convert the string date into a Date
 imputedData$date <- as.Date(imputedData$date,"%Y-%m-%d")
 
@@ -157,13 +171,22 @@ imputedData$dayGroup <- as.factor(imputedData$dayGroup)
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 #aggregate the average steps over each interval
 meanIntervalStepsDayGroup <- aggregate(steps ~ interval+dayGroup, imputedData, mean)
 
 library(ggplot2)
+```
 
+```
+## Warning: package 'ggplot2' was built under R version 3.1.2
+```
+
+```r
 #generate a line graph comparing the weekday steps to the weekend steps
 qplot(interval, steps, data=meanIntervalStepsDayGroup, geom=c("line"), 
       xlab="Interval", ylab="Number of Steps", main="") + facet_wrap(~ dayGroup, ncol=1)
 ```
+
+![](./PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
